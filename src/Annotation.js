@@ -49,7 +49,9 @@ export class Annotation extends EventDispatcher {
 		this.domElement = $(`
 			<div class="annotation" oncontextmenu="return false;">
 				<div class="annotation-titlebar">
+					<img name="action-delete" src="${Potree.resourcePath}/icons/square_14034319.png" class="annotation-delete-icon" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;"/>
 					<span class="annotation-label"></span>
+					<img name="action-link" src="${Potree.resourcePath}/icons/link.png" class="annotation-action-icon" style="width: 20px; height: 20px; vertical-align: middle; margin-left: 5px;"/>
 				</div>
 				<div class="annotation-description">
 					<span class="annotation-description-close">
@@ -59,21 +61,153 @@ export class Annotation extends EventDispatcher {
 				</div>
 			</div>
 		`);
+		
+		
 
 		this.elTitlebar = this.domElement.find('.annotation-titlebar');
 		this.elTitle = this.elTitlebar.find('.annotation-label');
 		this.elTitle.append(this._title);
+		this.elLink = this.elTitlebar.find('.annotation-action-icon');
+		this.elDelete = this.elTitlebar.find('.annotation-delete-icon');
 		this.elDescription = this.domElement.find('.annotation-description');
 		this.elDescriptionClose = this.elDescription.find('.annotation-description-close');
 		// this.elDescriptionContent = this.elDescription.find(".annotation-description-content");
 
 		this.clickTitle = () => {
-			if(this.hasView()){
-				this.moveHere(this.scene.getActiveCamera());
-			}
+			// if(this.hasView()){
+				// this.moveHere(this.scene.getActiveCamera());
+			// }
+			let annotationPosition = this.position;
+			// console.log(annotationPosition.x);
+			// this.scene.view.lookAt(annotationPosition);
+			this.scene.view.position.set(annotationPosition.x, annotationPosition.y, annotationPosition.z);
+        	// this.scene.view.zoomTo(new THREE.Vector3(annotationPosition.x, annotationPosition.y - 5, annotationPosition.z));
+			// this.zoomTo(annotationPosition);
+			// var targetPosition = annotationPosition.clone();
+			// var initialPosition = this.scene.view.position.clone();
+			// var tween = new TWEEN.Tween(initialPosition)
+			// 	.to(targetPosition, 1000)  // 1000ms for smooth transition
+			// 	.onUpdate(function() {
+			// 		// this.scene.view.position.copy(initialPosition);
+			// 		this.scene.view.lookAt(targetPosition);
+			// 	})
+			// 	.start();
+
+
 			this.dispatchEvent({type: 'click', target: this});
 		};
 
+		
+		// const extractFirstUrl = () => {
+		// 	const descriptionContent = this.elDescription.find('.annotation-description-content').text();
+		// 	const urlRegex = /(?:https?:\/\/)?(?:www\.)?[^\s/$.?#].[^\s]*/gi;
+		// 	const urls = descriptionContent.match(urlRegex);
+		
+		// 	if (urls && urls.length > 0) {
+		// 		// Ensure URL starts with http:// or https://
+		// 		let url = urls[0];
+		// 		// Add http:// if no scheme is present
+		// 		if (!/^https?:\/\//i.test(url)) {
+		// 			// Add http:// if the URL starts with www.
+		// 			if (/^www\./i.test(url)) {
+		// 				url = 'http://' + url;
+		// 			} else {
+		// 				url = 'http://' + url;
+		// 			}
+		// 		}
+		// 		return url;
+		// 	}
+		// 	return null;
+		// };
+		
+		// // Click event handler for the link image
+		// this.elLink.click(() => {
+		// 	const url = extractFirstUrl();
+		// 	if (url) {
+		// 		window.open(url, '_blank');
+		// 	} else {
+		// 		console.log('No URL found in the description.');
+		// 	}
+		// });
+
+		// const extractFirstUrl = () => {
+		// 	const descriptionContent = this.elDescription.find('.annotation-description-content').text();
+		// 	const urlRegex = /(?:Link\s*[:\s]*)?((?:https?:\/\/)?(?:www\.)?[^\s/$.?#].[^\s]*)/i;
+		// 	const match = descriptionContent.match(urlRegex);
+		
+		// 	if (match && match[1]) {
+		// 		let url = match[1];
+		// 		// Ensure URL starts with http:// or https://
+		// 		if (!/^https?:\/\//i.test(url)) {
+		// 			// If URL starts with www., add http://
+		// 			if (/^www\./i.test(url)) {
+		// 				url = 'http://' + url;
+		// 			} else {
+		// 				url = 'http://' + url;
+		// 			}
+		// 		}
+		// 		return url;
+		// 	}
+		// 	return null;
+		// };
+		
+		// this.elLink.click(() => {
+		// 	const url = extractFirstUrl();
+		// 	if (url) {
+		// 		window.open(url, '_blank');
+		// 	} else {
+		// 		console.log('No URL found in the description.');
+		// 	}
+		// });
+
+		const extractFirstUrl = () => {
+			const descriptionContent = this.elDescription.find('.annotation-description-content').text().trim();
+			const urlRegex = /(?:Link\s*[:\s]*)(https?:\/\/[^\s]+|www\.[^\s]+)/i;
+			const match = descriptionContent.match(urlRegex);
+		
+			if (match && match[1]) {
+				let url = match[1];
+				// Ensure URL starts with http:// or https://
+				if (!/^https?:\/\//i.test(url)) {
+					url = 'http://' + url;
+				}
+				// Validate the URL format
+				try {
+					new URL(url); // Throws an error if URL is invalid
+					return url;
+				} catch (e) {
+					console.error('Invalid URL format:', url);
+					return null;
+				}
+			}
+			return null;
+		};
+		
+		// Click event handler for the link image
+		this.elLink.click(() => {
+			const url = extractFirstUrl();
+			if (url) {
+				window.open(url, '_blank');
+			} else {
+				console.log('No valid URL found in the description.');
+				alert('No valid URL found in the description.');
+			}
+		});
+
+		this.elDelete.click(() => {
+			if (this.parent) {
+				this.parent.remove(this);
+			}
+			this.scene.dispatchEvent({
+				'type': 'annotation_removed',
+				'scene': this.scene,
+				'annotation': this
+			});
+			this.domElement.remove();
+		});
+		
+		
+		
 		this.elTitle.click(this.clickTitle);
 
 		this.actions = this.actions.map(a => {
@@ -512,6 +646,7 @@ export class Annotation extends EventDispatcher {
 
 		return hasView;
 	};
+	
 
 	moveHere (camera) {
 		if (!this.hasView()) {
@@ -560,7 +695,28 @@ export class Annotation extends EventDispatcher {
 			}
 		}
 	};
+	
+	// moveHere(camera) {
+	// 	if (!this.hasView()) {
+	// 		return;
+	// 	}
+	
+	// 	let endTarget;
+	// 	if (this.cameraTarget) {
+	// 		endTarget = this.cameraTarget;
+	// 	} else if (this.position) {
+	// 		endTarget = this.position;
+	// 	} else {
+	// 		endTarget = this.boundingBox.getCenter(new THREE.Vector3());
+	// 	}
+	
+	// 	let offset = new THREE.Vector3(-1, -1, -1); // Adjust these values as needed
+	// 	let offsetPosition = endTarget.clone().add(offset);
+	
+	// 	viewer.scene.view.setView(offsetPosition, endTarget, 500);
+	// }
 
+	
 	dispose () {
 		if (this.domElement.parentElement) {
 			this.domElement.parentElement.removeChild(this.domElement);

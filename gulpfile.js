@@ -1,4 +1,3 @@
-
 const path = require('path');
 const gulp = require('gulp');
 const exec = require('child_process').exec;
@@ -12,7 +11,6 @@ const {watch} = gulp;
 const {createExamplesPage} = require("./src/tools/create_potree_page");
 const {createGithubPage} = require("./src/tools/create_github_page");
 const {createIconsPage} = require("./src/tools/create_icons_page");
-
 
 let paths = {
 	laslaz: [
@@ -77,10 +75,29 @@ let shaders = [
 
 // For development, it is now possible to use 'gulp webserver'
 // from the command line to start the server (default port is 8080)
+// gulp.task('webserver', gulp.series(async function() {
+// 	server = connect.server({
+// 		port: 1234,
+// 		https: false,
+// 	});
+// }));
+
 gulp.task('webserver', gulp.series(async function() {
-	server = connect.server({
+	connect.server({
 		port: 1234,
 		https: false,
+		livereload: true,
+		middleware: function(connect, opt) {
+			return [
+				function(req, res, next) {
+					// Set CORS headers
+					res.setHeader('Access-Control-Allow-Origin', '*');
+					res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+					res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+					return next();
+				}
+			]
+		}
 	});
 }));
 
@@ -201,5 +218,3 @@ gulp.task('watch', gulp.parallel("build", "pack", "webserver", async function() 
 	watch(watchlist, gulp.series("build", "pack"));
 
 }));
-
-

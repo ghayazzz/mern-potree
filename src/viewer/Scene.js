@@ -280,6 +280,7 @@ export class Scene extends EventDispatcher{
 
 	removeMeasurement (measurement) {
 		let index = this.measurements.indexOf(measurement);
+		console.log(index);
 		if (index > -1) {
 			this.measurements.splice(index, 1);
 			this.dispatchEvent({
@@ -431,7 +432,16 @@ export class Scene extends EventDispatcher{
 		return this.annotations;
 	};
 
-	removeAnnotation(annotationToRemove) {
-		this.annotations.remove(annotationToRemove);
+	// removeAnnotation(annotationToRemove) {
+	// 	this.annotations.remove(annotationToRemove);
+	// }
+
+	removeAnnotation(annotation) {
+		this.annotations.remove(annotation);
+		this.dispatchEvent({
+			'type': 'annotation_removed',
+			'scene': this,
+			'annotation': annotation
+		});
 	}
 };

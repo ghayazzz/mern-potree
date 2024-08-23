@@ -11,8 +11,64 @@
 			<span id="potree_version_number" style="color: #9AA1A4; font-size: 80%; font-weight: 100"></span>
 		</span>
 		<div id="potree_languages" style="font-family:arial;"></div>
+
+		<!-- <div id="saveButton" style="display: flex; justify-content: center; align-items: center; height: 100%; margin: 5px;">
+			<button>Save Project</button>
+		</div> -->
+		<div id="saveButton" style="display: flex; justify-content: center; align-items: center; height: 100%; margin: 5px;">
+			<button style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.3s;"
+				onmouseover="this.style.backgroundColor='#e53935';"
+				onmouseout="this.style.backgroundColor='#f44336';">
+				Save Project
+			</button>
+		</div>		
+		
 	</div>
-	<div> 
+	<script>
+        document.getElementById('saveButton').addEventListener('click', async () => {
+            let lasFilename = getUrlParameter('lasFilename');
+            let userId = getUrlParameter('userId');
+            if (!lasFilename || !userId) {
+                console.error('lasFilename and userId parameters are required.');
+                return;
+            }
+
+            if (window.viewer) {
+                let data = Potree.saveProject(window.viewer);
+                console.log(data);
+
+                try {
+                    let response = await fetch('http://localhost:5000/savePotree', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            data: data,
+                            lasFilename: lasFilename,
+                            userId: userId
+                        })
+                    });
+                    let result = await response.json();
+                    console.log(result);
+
+                    if (result.success) {
+                        alert("Project Saved!");
+                    }
+                } catch (error) {
+                    console.error('Error saving project:', error);
+                }
+            } else {
+                console.error('Potree viewer not initialized.');
+            }
+        });
+
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+    </script>
+	<div>
 
 	<div id="potree_menu" class="accordion">
 
@@ -30,7 +86,7 @@
 				<li><span data-i18n="appearance.edl_radius"></span>: <span id="lblEDLRadius"></span><div id="sldEDLRadius"></div></li>
 				<li><span data-i18n="appearance.edl_strength"></span>: <span id="lblEDLStrength"></span><div id="sldEDLStrength"></div></li>
 				<li><span data-i18n="appearance.edl_opacity"></span>: <span id="lblEDLOpacity"></span><div id="sldEDLOpacity"></div></li>
-				
+
 				<div class="divider"><span>Background</span></div>
 
 				<li>
