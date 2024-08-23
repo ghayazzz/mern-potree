@@ -1,0 +1,443 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json5/2.2.1/json5.min.js"></script>
+
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg');"></div>
+        <div id="potree_render_area_1"></div>
+        <div id="potree_sidebar_container"></div>
+    </div>
+
+    <button id="backButton" onclick="window.history.back();" style="
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 1000; /* Ensure it is above other elements */
+    transition: background-color 0.3s;
+    " onmouseover="this.style.backgroundColor='#e53935';" onmouseout="this.style.backgroundColor='#f44336';">
+        Back
+    </button>
+
+
+
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+
+        window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+        viewer.setEDLEnabled(true);
+        viewer.setFOV(60);
+        viewer.setPointBudget(1_000_000);
+        viewer.loadSettingsFromURL();
+
+        viewer.setDescription("potree.org");
+
+        viewer.loadGUI(() => {
+            viewer.setLanguage('en');
+            $("#menu_appearance").next().show();
+        });
+
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        var lasFilename = getUrlParameter('lasFilename');
+        var url = lasFilename ? '../pointclouds/' + lasFilename + '/metadata.json' : '';
+
+        if (url) {
+            Potree.loadPointCloud(url).then(e => {
+                let pointcloud = e.pointcloud;
+                let material = pointcloud.material;
+
+                pointcloud.name = "uploadedPointCloud";
+
+                let hasRGBA = pointcloud.getAttributes().attributes.find(a => a.name === "rgba") !== undefined;
+                if (hasRGBA) {
+                    pointcloud.material.activeAttributeName = "rgba";
+                } else {
+                    pointcloud.material.activeAttributeName = "color";
+                }
+
+                material.size = 0.5;
+                material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+                viewer.scene.addPointCloud(pointcloud);
+                viewer.zoomTo(e.pointcloud);
+
+                let targetPosition = new THREE.Vector3(-2.875, 2.929, -0.645);
+                let offsetPosition = new THREE.Vector3(-2.875 - 1, 2.929 - 1, -0.645 - 1);
+                viewer.scene.view.setView(offsetPosition, targetPosition, 500);
+
+            });
+        }
+    </script>
+</body>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json5/2.2.1/json5.min.js"></script>
+
+    <div id="content" class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        Loading...
+    </div>
+
+    <button id="backButton" onclick="window.history.back();" style="
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 1000; /* Ensure it is above other elements */
+    transition: background-color 0.3s;
+    " onmouseover="this.style.backgroundColor='#e53935';" onmouseout="this.style.backgroundColor='#f44336';">
+        Back
+    </button>
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+
+        // Function to extract URL parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const token = getQueryParam('token');
+
+        if (token) {
+            fetch('http://localhost:5000/api/auth/user', {
+                method: 'GET',
+                headers: {
+                    'x-auth-token': token
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) {
+                    // User is authenticated, load the Potree content
+                    document.getElementById('content').innerHTML = `
+                        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg'); height: 100%;"></div>
+                        <div id="potree_sidebar_container"></div>
+                    `;
+                    initializePotree();
+                } else {
+                    // User is not authenticated, redirect to login
+                    window.location.href = 'http://localhost:3000/login';
+                }
+            })
+            .catch(error => {
+                console.error('Error during authentication:', error);
+                window.location.href = 'http://localhost:3000/login';
+            });
+        } else {
+            // No token found, redirect to login
+            window.location.href = 'http://localhost:3000/login';
+        }
+
+        function initializePotree() {
+            window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+            viewer.setEDLEnabled(true);
+            viewer.setFOV(60);
+            viewer.setPointBudget(1_000_000);
+            viewer.loadSettingsFromURL();
+
+            viewer.setDescription("potree.org");
+
+            viewer.loadGUI(() => {
+                viewer.setLanguage('en');
+                $("#menu_appearance").next().show();
+            });
+
+            var lasFilename = getQueryParam('lasFilename');
+            var url = lasFilename ? '../pointclouds/' + lasFilename + '/metadata.json' : '';
+
+            if (url) {
+                Potree.loadPointCloud(url).then(e => {
+                    let pointcloud = e.pointcloud;
+                    let material = pointcloud.material;
+
+                    pointcloud.name = "uploadedPointCloud";
+
+                    let hasRGBA = pointcloud.getAttributes().attributes.find(a => a.name === "rgba") !== undefined;
+                    if (hasRGBA) {
+                        pointcloud.material.activeAttributeName = "rgba";
+                    } else {
+                        pointcloud.material.activeAttributeName = "color";
+                    }
+
+                    material.size = 0.5;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+                    viewer.scene.addPointCloud(pointcloud);
+                    viewer.zoomTo(e.pointcloud);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+    <link rel="stylesheet" type="text/css" href="../build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="../libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="../libs/jstree/themes/mixed/style.css">
+</head>
+
+<body>
+    <script src="../libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="../libs/spectrum/spectrum.js"></script>
+    <script src="../libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="../libs/other/BinaryHeap.js"></script>
+    <script src="../libs/tween/tween.min.js"></script>
+    <script src="../libs/d3/d3.js"></script>
+    <script src="../libs/proj4/proj4.js"></script>
+    <script src="../libs/openlayers3/ol.js"></script>
+    <script src="../libs/i18next/i18next.js"></script>
+    <script src="../libs/jstree/jstree.js"></script>
+    <script src="../build/potree/potree.js"></script>
+    <script src="../libs/plasio/js/laslaz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json5/2.2.1/json5.min.js"></script>
+
+    <div id="content" class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        Loading...
+    </div>
+
+    <div id="buttonContainer" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
+        <button id="backButton" onclick="window.history.back();" style="
+        display: inline-block;
+        margin-right: 10px;
+        padding: 10px 20px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+        " onmouseover="this.style.backgroundColor='#e53935';" onmouseout="this.style.backgroundColor='#f44336';">
+            Back
+        </button>
+
+        <button id="logoutButton" onclick="handleLogoutButton();" style="
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+        " onmouseover="this.style.backgroundColor='#e53935';" onmouseout="this.style.backgroundColor='#f44336';">
+            Logout
+        </button>
+    </div>
+
+    <!-- Regular Script for Global Functions -->
+    <script>
+        async function handleLogoutButton() {
+            const token = new URLSearchParams(window.location.search).get('token');
+
+            if (token) {
+                try {
+                    await fetch('http://localhost:5000/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'x-auth-token': token
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error during logout:', error);
+                }
+            }
+
+            // Clear token and navigate to login page
+            localStorage.removeItem('token');
+            window.location.href = 'http://localhost:3000/login';
+            window.location.reload();
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from "../libs/three.js/build/three.module.js";
+
+        // Function to extract URL parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const token = getQueryParam('token');
+
+        if (token) {
+            fetch('http://localhost:5000/api/auth/user', {
+                method: 'GET',
+                headers: {
+                    'x-auth-token': token
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) {
+                    // User is authenticated, load the Potree content
+                    document.getElementById('content').innerHTML = `
+                        <div id="potree_render_area" style="background-image: url('../build/potree/resources/images/background.jpg'); height: 100%;"></div>
+                        <div id="potree_sidebar_container"></div>
+                    `;
+                    initializePotree();
+                } else {
+                    // User is not authenticated, redirect to login
+                    window.location.href = 'http://localhost:3000/login';
+                }
+            })
+            .catch(error => {
+                console.error('Error during authentication:', error);
+                window.location.href = 'http://localhost:3000/login';
+            });
+        } else {
+            // No token found, redirect to login
+            window.location.href = 'http://localhost:3000/login';
+        }
+
+        function initializePotree() {
+            window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+            viewer.setEDLEnabled(true);
+            viewer.setFOV(60);
+            viewer.setPointBudget(1_000_000);
+            viewer.loadSettingsFromURL();
+
+            viewer.setDescription("potree.org");
+
+            viewer.loadGUI(() => {
+                viewer.setLanguage('en');
+                $("#menu_appearance").next().show();
+            });
+
+            var lasFilename = getQueryParam('lasFilename');
+            // var url = lasFilename ? '../pointclouds/' + lasFilename + '/metadata.json' : '';
+            var url = lasFilename ? 'https://d2ugqt65ye2v1s.cloudfront.net/pointclouds/' + lasFilename + '/metadata.json' : '';
+            // var url = 'https://cdn.jsdelivr.net/npm/potree@0.1.0/pointclouds/lion_takanawa_las/cloud.js';
+            if (url) {
+                Potree.loadPointCloud(url).then(e => {
+                    let pointcloud = e.pointcloud;
+                    let material = pointcloud.material;
+
+                    pointcloud.name = "uploadedPointCloud";
+
+                    let hasRGBA = pointcloud.getAttributes().attributes.find(a => a.name === "rgba") !== undefined;
+                    if (hasRGBA) {
+                        pointcloud.material.activeAttributeName = "rgba";
+                    } else {
+                        pointcloud.material.activeAttributeName = "color";
+                    }
+
+                    material.size = 0.5;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+                    viewer.scene.addPointCloud(pointcloud);
+                    viewer.zoomTo(e.pointcloud);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
